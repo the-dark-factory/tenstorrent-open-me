@@ -1,0 +1,42 @@
+{
+  "claim": "two admitted tt-npe twin cores agree exactly with tt-npe's own code over balanced random inputs",
+  "run_at": "2026-09-10T20:55Z",
+  "scope": "2 of the 3 directly-callable cores. interpolateBW (rate_resolution_pkg) NOT yet done.",
+  "oracle": {
+    "host": "gertrude (x86_64) — tt-npe 6967ce36 built from source with g++ 13.3",
+    "calls": "THEIR npeTransferDependencyTracker, THEIR Grid2D<int>, THEIR MulticastCoordSet::grid_size()",
+    "note": "no arithmetic re-implemented in the harness; the flat cell index is read out of their own operator() by address arithmetic"
+  },
+  "twin": {
+    "host": "bill — gnatmake 15.0.1",
+    "cores": ["checkpoint_pkg (ledger 306)", "grid_bounds_pkg (ledger 305)"],
+    "core_sha256": {
+      "checkpoint_pkg.ads": "7119804bcb75baeb18738e91fc4d5ec1d03a8e1d9ecd687bbc4685d3fbfa3092",
+      "grid_bounds_pkg.ads": "5ab22a6b2fcf908b8fa66008064eb6e72eafa65df939f03d600bd97e531b70d0"
+    },
+    "harness": "hand-written, pragma SPARK_Mode (Off), instrumentation only, never admitted"
+  },
+  "result": {
+    "comparisons": 2400,
+    "mismatches": 0,
+    "checkpoint": "400 rows x {done, release, all-arrived} — 0 mismatches",
+    "grid_bounds": "400 rows x {in-bounds, cell-index, rectangle-cells} — 0 mismatches"
+  },
+  "coverage": {
+    "grid in-bounds rows": "216/400",
+    "checkpoint done==true": "177/400",
+    "checkpoint all-arrived": "255/400",
+    "note": "first run was skewed (58/400 in-bounds, 60/400 done) and was rerun with rebalanced inputs"
+  },
+  "mutation_check": {
+    "why": "a differential reporting 0 mismatches is worthless unless it can report non-zero",
+    "release_plus_one": "caught 400/400",
+    "cell_index_plus_one": "caught 216/216 testable (in-bounds) rows"
+  },
+  "what_this_does_NOT_establish": [
+    "transfer_progress_pkg and timestep_pkg — their expressions live inside the loop body and are not callable; testing them would compare the twin against a transcription, not against their code",
+    "rate_resolution_pkg — interpolateBW is callable but not yet driven; float-vs-integer needs a stated tolerance",
+    "agreement on inputs outside the sampled ranges",
+    "anything about tt-npe's correctness; this is agreement, not correctness"
+  ]
+}

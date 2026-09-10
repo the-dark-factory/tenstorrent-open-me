@@ -1,0 +1,25 @@
+{
+  "claim": "the tt-npe Blackhole switch fallthrough is OBSERVED, not just reasoned",
+  "observed_at": "2026-09-10T20:39:04Z",
+  "host": "gertrude (x86_64, Ubuntu 24.04.4 LTS) — NOT the seat",
+  "tt_npe_commit": "6967ce36b99c179742114107ca7da8aca722dad2",
+  "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "build": "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ (their CMake defaults to Clang-20 and refuses other clangs)",
+  "their_own_test_suite": "45/45 PASS when run from tt_npe/ — the repo is healthy; this is not a broken checkout",
+  "experiment": {
+    "design": "controlled substitution — same trace file, same chip count (8), only the ARCHITECTURE differs",
+    "input": "cpp/test/data/multichip-trace-example.json (their own fixture, exercises fabric_send)",
+    "control": "T3K = WormholeMultichipDeviceModel(8) — Wormhole case HAS break",
+    "treatment": "P150_X8 = BlackholeMultichipDeviceModel(8) — Blackhole case has NO break"
+  },
+  "result": {
+    "T3K": "INGESTED OK",
+    "P150_X8": "returned nullopt after: 'E: Unknown device model: P150_X8' then 'E: TRACE_INGEST_FAILED'"
+  },
+  "why_this_is_the_fallthrough_and_not_the_factory": "the factory emits an IDENTICAL message string but throws DEVICE_MODEL_INIT_FAILED (code 4). The observed throw is TRACE_INGEST_FAILED (code 6), which is emitted ONLY at npeWorkloadIngest.cpp:568 — the default: branch that case DeviceArch::Blackhole falls into. P150_X8 is explicitly supported by npeDeviceModelFactory.hpp:45, so the model was constructed successfully and ingest then declared it unknown.",
+  "defect": "npeWorkloadIngest.cpp:563-568 and npeEngine.cpp:136-141 — case DeviceArch::Blackhole: has no break and falls into default:. DeviceArch has exactly two members, so default: is reachable ONLY by this fallthrough.",
+  "fix": "two `break;` statements, plus -Wimplicit-fallthrough in CMakeLists.txt (they already run -Werror, so the flag would have made both a build failure)",
+  "scope": "Blackhole + fabric/multichip traces. Single-chip Blackhole without fabric_send events is unaffected.",
+  "not_reported_upstream": true,
+  "posted_by_seat": false
+}

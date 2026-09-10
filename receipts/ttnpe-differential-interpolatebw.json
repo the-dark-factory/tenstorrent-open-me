@@ -1,0 +1,48 @@
+{
+  "claim": "rate_resolution_pkg agrees with tt-npe's interpolateBW to within the twin's own stated quantisation, and the residual is fully explained",
+  "run_at": "2026-09-10T21:00Z",
+  "completes": "the third of the three directly-callable cores",
+  "oracle": {
+    "host": "gertrude — tt-npe 6967ce36 built from source",
+    "calls": "THEIR interpolateBW(), driven with THEIR BlackholeDeviceModel getTransferBandwidthTable() and getMaxNoCTransferBandwidth()",
+    "their_table": "9 entries, sizes 0..16384, bw 0..60.9 bytes/cycle; max_bw 60.900002",
+    "harness_does_itself": "ONLY the bracket lookup (which two table entries surround the packet size) so the twin can be handed the same pair. The bandwidth VALUE is entirely theirs."
+  },
+  "twin": {
+    "composition": "Interpolate_Rate (table bracket) -> Steady_State_Weight (n) -> Blend_Rates (max_bw, steady, weight)",
+    "core": "rate_resolution_pkg (ledger 304)"
+  },
+  "result": {
+    "rows": 498,
+    "exact": 147,
+    "within_1_milli": 438,
+    "within_5_milli": 480,
+    "within_20_milli": 489,
+    "beyond_20_milli": 9,
+    "max_abs_diff_milli": 43,
+    "max_abs_diff_bytes_per_cycle": 0.043,
+    "max_relative_error_pct": 0.3374,
+    "mean_relative_error_pct": 0.00493
+  },
+  "the_residual_is_EXPLAINED_not_tolerated": {
+    "hypothesis": "the dominant error term is the twin's Weight type, quantised to thousandths; a weight error of up to 1/1000 scales by max_bw (60.9 bytes/cycle = 60900 milli), giving up to ~61 milli",
+    "test": "every row checked against bound = max_bw_milli/1000 + 2 milli",
+    "outcome": "498/498 rows inside the predicted bound",
+    "consequence": "this is a DESIGN consequence of a choice the seat made (Weight in thousandths), not float noise. Widening Weight to parts-per-million would shrink it proportionally."
+  },
+  "excluded_by_design": {
+    "rows": 2,
+    "reason": "their table's first entry is (size 0, bw 0.0). The twin's Milli_Rate is bounded BELOW BY 1 deliberately - that positivity is what makes the division obligation discharge by construction. Packet sizes bracketed by that zero entry are outside the twin's domain by design, not by accident.",
+    "honesty_note": "these 2 rows are excluded and counted, not silently dropped"
+  },
+  "mutation_check": {
+    "why": "a differential reporting agreement is worthless unless it can report disagreement",
+    "mutation": "+60 milli on the twin result, just above the observed honest max of 43",
+    "caught": "498/498 rows exceeded the honest envelope"
+  },
+  "what_this_does_NOT_establish": [
+    "packet sizes outside their table's range (their fallback path was not exercised)",
+    "the derating chain (Apply_Derate, To_Whole_Bytes, Cap_By_Injection) - not driven here",
+    "anything about tt-npe's correctness; this is agreement, not correctness"
+  ]
+}

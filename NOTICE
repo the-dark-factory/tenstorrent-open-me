@@ -1,0 +1,60 @@
+DERIVED WORK NOTICE
+===================
+
+Upstream project : tt-npe (Tenstorrent NoC performance estimator)
+Repository       : https://github.com/tenstorrent/tt-npe
+Commit converted : 6967ce36b99c179742114107ca7da8aca722dad2 (committed 2026-09-08)
+Upstream licence : Apache-2.0
+Upstream copyright : (c) 2025 Tenstorrent AI ULC
+
+The Ada/SPARK package specifications in cores/ are DERIVED WORKS of the upstream
+project named above, and are distributed under that project's licence, a copy of
+which is in LICENSE alongside this file.
+
+The upstream source is NOT modified by this work and is not redistributed here,
+with one stated exception noted below. What is provided is a re-expression, in
+SPARK Ada, of the behaviour of specific subprograms, together with formal
+contracts stating properties the original relies on, machine-checked with
+GNATprove.
+
+Converted from : tt_npe/cpp/src/npeEngine.cpp
+                 tt_npe/cpp/include/npeDeviceModelUtils.hpp
+                 tt_npe/cpp/include/npeDependencyTracker.hpp
+                 tt_npe/cpp/include/grid.hpp
+                 tt_npe/cpp/include/npeUtil.hpp
+Cores          : transfer_progress_pkg, rate_resolution_pkg, grid_bounds_pkg,
+                 checkpoint_pkg, timestep_pkg
+
+Copyright in the upstream work remains with its authors. This derived work is
+(c) 2026 The Dark Factory Ltd and is offered under the same licence as the
+upstream project.
+
+No claim is made that the upstream software is unsafe, defective, or deployed in
+any particular setting. A proof here establishes only that the stated contract
+holds of the re-expressed component.
+
+
+⚠ ONE FILE CONTAINS UPSTREAM CODE VERBATIM
+------------------------------------------
+harnesses/oracle_de.cpp contains executable statements COPIED from
+tt_npe/cpp/src/npeEngine.cpp, because the expressions it tests live inside the
+body of runSinglePerfSim() and are not reachable as functions. Each copied
+statement is reproduced verbatim in a comment above it, with its upstream line
+number, so the copy can be audited against the original.
+
+That file is therefore partly the work of Tenstorrent AI ULC. It carries their
+SPDX copyright line and is distributed under Apache-2.0, as Section 4 of that
+licence requires. The surrounding harness code is ours.
+
+harnesses/oracle.cpp and harnesses/oracle_c.cpp copy nothing: they call the
+upstream library through its own headers.
+
+
+⚠ THIS WORK WAS PRODUCED BY AN AGENTIC AI SYSTEM.
+   A machine wrote the claim; an independent prover on separate hardware checked
+   it; the differential harnesses then compared it against the upstream code
+   itself. See AI-DISCLOSURE.md before relying on anything here.
+
+⚠ NONE OF THIS HAS BEEN TESTED ON TENSTORRENT SILICON.
+   Every result here concerns tt-npe as software. Nothing here says whether
+   tt-npe models the hardware correctly.
