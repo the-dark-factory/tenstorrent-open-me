@@ -78,6 +78,42 @@ that a bandwidth cannot be zero, that the loop terminates.
 
 ---
 
+## Seven more: drivers and tooling, not just the estimator
+
+The five above are all tt-npe (a performance *estimator* — software that never
+touches real hardware). These seven are different: they reproduce arithmetic from
+**tt-umd** (Tenstorrent's user-mode driver, Apache-2.0) and from **tt-smi** /
+**tt-topology** (the CLI tools that read board telemetry and configure multi-chip
+Ethernet routing, both Apache-2.0). This is address arithmetic and bit-decoding that
+runs closer to real silicon than anything above.
+
+| package | covers | source |
+|---|---|---|
+| `tlb_window` | TLB window address arithmetic, overflow-safe bounds check | tt-umd |
+| `sysmem_bounds` | host-buffer page alignment and DMA range bounds check | tt-umd |
+| `l2cpu_shuffle` | L2CPU harvesting-mask bit permutation, proved a genuine bijection (round-trip identity, not just a formula match) | tt-umd |
+| `dram_bank_mirror` | DRAM bank-mirroring index arithmetic; proves the underflow the C's if/else guard is *supposed* to prevent actually cannot happen | tt-umd |
+| `pcie_alignment` | page-alignment and hugepage-size checks | tt-umd |
+| `board_type_decode` | board-ID → board-type decode | tt-smi **and** tt-topology |
+| `eth_xy_decode` | logical Ethernet port → physical NOC coordinate, proved injective (no two ports alias the same tile) | tt-topology |
+
+`board_type_decode` is worth a second look: **tt-smi and tt-topology each carry
+their own independent copy of this same decode, and the two copies have already
+drifted apart** — tt-topology's is missing three board types (the Grayskull cards)
+and one alias that tt-smi's has. This core is the union of both, proved total (it
+cannot raise, unlike either Python original). It is a live, demonstrated bug the
+proof exists to retire, not a hypothetical one.
+
+**Not everything attempted here proved.** One tt-umd core (ARC message-queue
+ring-buffer disjointness — proving a producer's writes and a consumer's reads can
+never land on the same physical slot) and one tt-smi core (the GDDR
+training/BIST harvest-tolerance check) both hit the same wall: the property needs a
+nonlinear arithmetic fact or a loop-free proof structure that the current coder
+pass would not reliably produce, however the prose was phrased. Kept as open work,
+not quietly dropped.
+
+---
+
 ## The differential tests
 
 `harnesses/` drives the upstream code and these cores over identical inputs and
