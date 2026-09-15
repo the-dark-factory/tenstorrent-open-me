@@ -96,15 +96,26 @@ runs closer to real silicon than anything above.
 | `l2cpu_shuffle` | L2CPU harvesting-mask bit permutation, proved a genuine bijection (round-trip identity, not just a formula match) | tt-umd |
 | `dram_bank_mirror` | DRAM bank-mirroring index arithmetic; proves the underflow the C's if/else guard is *supposed* to prevent actually cannot happen | tt-umd |
 | `pcie_alignment` | page-alignment and hugepage-size checks | tt-umd |
-| `board_type_decode` | board-ID → board-type decode | tt-smi **and** tt-topology |
+| `board_type_decode` ⚠ | board-ID → board-type decode — **under re-forge, see correction below** | tt-smi **and** tt-topology |
 | `eth_xy_decode` | logical Ethernet port → physical NOC coordinate, proved injective (no two ports alias the same tile) | tt-topology |
 
 `board_type_decode` is worth a second look: **tt-smi and tt-topology each carry
 their own independent copy of this same decode, and the two copies have already
 drifted apart** — tt-topology's is missing three board types (the Grayskull cards)
-and one alias that tt-smi's has. This core is the union of both, proved total (it
-cannot raise, unlike either Python original). It is a live, demonstrated bug the
-proof exists to retire, not a hypothetical one.
+and one alias that tt-smi's has. The intent is one proven decode that is the union of both and cannot raise.
+**As published it does not yet do that** — see the correction below.
+
+> ⚠ **Correction, 2026-09-15.** We ran a Yang: Tenstorrent's two original
+> `get_board_type` functions (tt-smi `005fc6f`, tt-topology `7bd675f`, extracted
+> verbatim) and this core, fed the same 38 board IDs. It confirmed the drift at
+> runtime — the two copies disagree on 10 of 38, and tt-smi's raises `ValueError`
+> on malformed input where tt-topology's returns `N/A`. It also showed that **this
+> core, as published, decodes every real board ID as `N/A`.** Its `Extract_Upi`
+> reads the low 20 bits of the serial instead of the UPI field, and the contract we
+> wrote for it only bounded the result (`<= 16#FFFFF#`) instead of stating the
+> shift — so the proof could not catch it. The fault is in our specification, not
+> in the prover. The core is being re-forged with the extraction stated exactly and
+> will be re-tested the same way before this note is replaced. It was never admitted.
 
 **Not everything attempted here proved.** One tt-umd core (ARC message-queue
 ring-buffer disjointness — proving a producer's writes and a consumer's reads can
