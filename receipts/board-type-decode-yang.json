@@ -19,7 +19,15 @@
   "twin": {
     "core": "cores/board_type_decode.ads (spec-only expression functions, gnatprove level 2, spec-only discharge)",
     "core_sha256": "232e963f04d539eaa5a3db8069894750cbbd2ae03311ce084f5993de8eefd294",
-    "admitted": false
+    "admitted": true,
+    "admission": {
+      "receipt": "receipts/board-type-decode-admission-receipt.jsonl",
+      "prover": "gertrude",
+      "signer_host": "gertrude",
+      "signer_id": "interim-software-2026-08",
+      "issued_at": "2026-09-15T20:30:59Z",
+      "source_sha256": "232e963f04d539eaa5a3db8069894750cbbd2ae03311ce084f5993de8eefd294"
+    }
   },
   "inputs": 38,
   "result": {
