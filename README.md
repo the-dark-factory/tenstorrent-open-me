@@ -18,6 +18,8 @@ estimator, and one defect found while reading it.
 > Every result concerns tt-npe **as software**, on commodity x86-64. Nothing here
 > says whether tt-npe models the hardware correctly — that is a different question
 > and we cannot answer it.
+> The Blackhole FMA cores are the same: they agree with Tenstorrent's C **reference
+> model**, and none of it has run on a card.
 
 ---
 
@@ -114,6 +116,41 @@ not quietly dropped.
 
 ---
 
+## The Blackhole FMA: a whole floating-point unit, bit-exact
+
+Tenstorrent publishes bit-exact C reference models of its FMA hardware (fused
+`x * y + z`) in **tt-isa-documentation** (`Miscellaneous/FMA/fma.c`, Apache-2.0).
+The Blackhole variant, `fma_model_bh`, departs from IEEE 754 on purpose, and says
+so: denormal inputs are flushed to zero; a product that would overflow on its own
+becomes infinity; a product that would underflow on its own is treated as exactly
+zero; the sticky bit uses a truncated mask; denormal *results* are flushed after
+rounding.
+
+These cores re-express **the whole of `fma_model_bh`** in SPARK, not a sample of it.
+
+| package | covers |
+|---|---|
+| `bh_fma_primitives` | exponent and mantissa fields (denormal flush), the semi-sticky shift |
+| `bh_fma_msb` | highest set bit and leading-zero count, exact |
+| `bh_fma_special` | the NaN / infinity block, proved never to return a finite value |
+| `bh_fma_align_add` | exponent alignment and sign-magnitude addition, 64- and 32-bit widths exactly as the C has them |
+| `bh_fma_normalize_round` | normalisation, round-to-nearest-even, denormal flush, proved sign-preserving and never denormal |
+| **`bh_fma`** | **the complete `fma_model_bh`**, composed from the above (37 expression functions) |
+| `fma_diff_verdict_pkg` | the acceptance rule for the FMA differential test below, so the verdict is a proof, not a script |
+
+Proved about `Bh_Fma.Fma_Bh` for **every one of the 2⁹⁶ input triples**: no runtime
+error; total (it has no precondition); and **it never returns a denormal**: the
+result either has a non-zero exponent field or is exactly a signed zero.
+
+A proof shows the Ada meets its contract. It cannot show the contract is the right
+formula. So the FMA row of the differential tests below runs `Bh_Fma` against
+Tenstorrent's own `fma.c`, unmodified.
+
+⚠ **Scope:** that is agreement with Tenstorrent's **reference model**. No Blackhole
+card was involved.
+
+---
+
 ## The differential tests
 
 `harnesses/` drives the upstream code and these cores over identical inputs and
@@ -126,6 +163,7 @@ diffs them.
 | `interpolateBW` — against **their compiled code** | 498 | every row within its own predicted quantisation |
 | transfer progress — against a **transcription** ⚠ | 600 | 0 mismatches |
 | timestep — against a **transcription** ⚠ | 600 | 210 divergences, all explained |
+| `fma_model_bh` — against **their unmodified C** | 20,064,000 | 0 mismatches; NaN, infinity, zero and finite results all reached |
 
 The last two are **weaker evidence** and are labelled as such everywhere: those
 expressions are not callable, so they were copied. If the copy is wrong, those two
@@ -133,6 +171,14 @@ rows are worthless in a way the first three are not.
 
 Every result was **mutation-checked first** — a differential reporting agreement is
 worthless unless it can report disagreement.
+
+The FMA row goes further: its verdict is issued by `fma_diff_verdict_pkg`, a proven
+core, through a forged edge. The probe script only relays numbers (`harnesses/fma_diff_probe.bb`).
+Its inputs: all 64,000 triples of 40 special values, plus 20,000,000 random triples,
+half of them forced onto exponent edges. Its mutant run flips one bit of the Ada
+result and must see all 65,000 cases disagree. A separate, informational run of
+2,000,064,000 triples also found 0 mismatches. `fma.c` itself is not redistributed;
+see NOTICE.
 
 ---
 
@@ -152,6 +198,13 @@ Kept because a report that shows only its hits is not evidence of care.
 - **"`assert()` is compiled out in Release."** Refuted — their CMake sets
   `CMAKE_CXX_FLAGS_RELEASE` to just `-O3`, dropping CMake's default `-DNDEBUG`, so
   the bounds checks stay live.
+- **The first FMA brief carried two bugs no proof could have caught.** It tested z's
+  mantissa against `0x400000` *before* the C's `<<= 3` (the C compares the shifted
+  value against `0x4000000`), which would have turned every `z = ∞` into NaN; and it
+  gave the sticky shift a precondition, `Amount <= 128`, that the real call sites
+  break (shifts reach 254). GNATprove would have proved the wrong formula faithfully.
+  Both were found by reading the brief against the C before anything ran, which is
+  the argument for the FMA differential test existing at all.
 
 tt-npe fails loudly and kept surviving attempts to break it. That is worth saying.
 

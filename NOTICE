@@ -58,3 +58,31 @@ upstream library through its own headers.
 ⚠ NONE OF THIS HAS BEEN TESTED ON TENSTORRENT SILICON.
    Every result here concerns tt-npe as software. Nothing here says whether
    tt-npe models the hardware correctly.
+
+
+SECOND UPSTREAM — the Blackhole FMA reference model
+===================================================
+
+Upstream project : tt-isa-documentation (Tenstorrent ISA documentation)
+Repository       : https://github.com/tenstorrent/tt-isa-documentation
+File             : Miscellaneous/FMA/fma.c (function fma_model_bh)
+Commit           : NOT RECORDED when the file was fetched (2026-09-15). The exact
+                   bytes used have sha256
+                   156c27ab9b4958136489f3880306e25f406d409b6d1adb6c4cc01fb4568d3cad
+                   Compare against upstream before relying on the FMA results.
+Upstream licence : Apache-2.0
+Upstream copyright : (c) 2025 Tenstorrent AI ULC
+
+Cores derived from it, distributed under that licence:
+                 bh_fma_primitives, bh_fma_msb, bh_fma_special, bh_fma_align_add,
+                 bh_fma_normalize_round, bh_fma
+
+Test machinery, ours, copying nothing from upstream:
+                 cores/fma_diff_verdict_pkg.ads, harnesses/fma_diff_main.adb,
+                 harnesses/fma_diff_verdict_main.adb, harnesses/fma_diff_probe.bb
+
+fma.c is NOT redistributed here. harnesses/fma_diff_main.adb links against it,
+unmodified, declaring fma_model_bh with Import, Convention => C. To re-run the
+test, fetch fma.c from upstream and compile it beside the harness.
+
+⛔ The FMA results concern Tenstorrent's C reference model, not Blackhole silicon.

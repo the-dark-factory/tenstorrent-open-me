@@ -1,0 +1,66 @@
+{
+  "claim": "the proven Bh_Fma.Fma_Bh agrees bit-for-bit with Tenstorrent's fma_model_bh reference model over a special-value grid and 20,000,000 random triples",
+  "run_at": "2026-09-15T18:12Z",
+  "scope": "equality with the C reference model over the inputs below only. The proofs separately cover runtime safety, totality and the never-denormal property for ALL 2^96 inputs; they do not establish equality with fma.c.",
+  "oracle": {
+    "host": "bill (aarch64-apple-darwin) — GNAT-toolchain gcc 15.0.1, -O2 -ffreestanding",
+    "source": "tt-isa-documentation Miscellaneous/FMA/fma.c, UNMODIFIED, not redistributed here",
+    "fma_c_sha256": "156c27ab9b4958136489f3880306e25f406d409b6d1adb6c4cc01fb4568d3cad",
+    "upstream_commit": "not recorded",
+    "calls": "THEIR fma_model_bh through Import, Convention => C; no FMA arithmetic re-implemented in the harness"
+  },
+  "twin": {
+    "host": "bill — GNAT 15.0.1, -gnat2022 -O2",
+    "core": "bh_fma — admission receipt issued 2026-09-15T18:33:25Z by admitter@gertrude (receipts/blackhole-fma-admission-receipts.jsonl)",
+    "core_sha256": {
+      "bh_fma.ads": "f12eafc85a6724c2421b340b62d9a4987c694fa207a1cfade3f34f50fcdf5bd5"
+    }
+  },
+  "harness": {
+    "driver": "harnesses/fma_diff_main.adb (forged from prose; compile-gated, not proved)",
+    "driver_sha256": "a79be9336e1bdd9824f19e4e6a0e419abbf6c78327351f1cf679777fb1dd9a23",
+    "probe": "harnesses/fma_diff_probe.bb (relays numbers only; decides nothing)",
+    "probe_sha256": "39e64dfa498be93117c3737c5ee781d41b172e4d7d9fc1a7c73c21bc4847e757"
+  },
+  "inputs": {
+    "grid": "40 special values (zeros, denormals, smallest normal, ±1, ±2, largest finite, infinities, NaNs, exponent fields near 63/64 and 191/192); all 64,000 ordered triples",
+    "random": "20,000,000 xorshift64 triples, seed 0x9E3779B97F4A7C15; every other triple keeps random signs and mantissas but forces each exponent field from {0,1,2,63,64,65,100,126,127,128,129,190,191,192,253,254,255}"
+  },
+  "result": {
+    "checked": 20064000,
+    "mismatches": 0,
+    "result_classes": {
+      "nan": 1795711,
+      "inf": 2300468,
+      "zero": 135178,
+      "finite": 15832643
+    }
+  },
+  "mutation_check": {
+    "mode": "Ada result xor 1 before comparing",
+    "checked": 65000,
+    "mismatches": 65000
+  },
+  "usage_check": "no arguments: usage line printed, exit 1",
+  "verdict": {
+    "issuer": "fma_diff_verdict_pkg (proven; admission receipt 2026-09-15T18:33:30Z) via harnesses/fma_diff_verdict_main.adb",
+    "core_sha256": "266336702a94c3bf05fe061e1eeb6d8ce21a178eb40ad8836df841c8904e6ef5",
+    "output": "ACCEPTED real=TRUE mutant=TRUE usage=TRUE",
+    "exit": 0
+  },
+  "informational_run": {
+    "note": "not verdict-gated",
+    "checked": 2000064000,
+    "mismatches": 0,
+    "result_classes": {
+      "nan": 177578965,
+      "inf": 229050795,
+      "zero": 13166538,
+      "finite": 1580267702
+    }
+  },
+  "not_claimed": [
+    "agreement with Blackhole silicon — no card was used",
+    "that fma.c matches any particular upstream commit — the commit was not recorded; the file hash was"
+  ]
+}
