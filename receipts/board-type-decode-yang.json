@@ -1,0 +1,37 @@
+{
+  "claim": "the re-forged board_type_decode agrees with tt-smi's own get_board_type on every well-formed board ID, and is the union of the tt-smi and tt-topology copies",
+  "run_at": "2026-09-15T19:55Z",
+  "method": "Yang: the original get_board_type of each upstream tool was extracted verbatim (Python ast source segment) and executed on the same 38 inputs as a compile-gated Ada edge over the proven core; outputs compared line by line",
+  "originals": [
+    {
+      "repo": "tenstorrent/tt-smi",
+      "commit": "005fc6f9804a802cb9bdd4dd9844d1d2fed84517",
+      "file": "tt_smi/utils.py",
+      "extracted_function_sha256": "0432ea6d14a0165ecaac8b10716152b8445f27736944d150f0a95ccd5f2db749"
+    },
+    {
+      "repo": "tenstorrent/tt-topology",
+      "commit": "7bd675f888f9f0d27674fab7cb4188d5b1255481",
+      "file": "tt_topology/backend.py",
+      "extracted_function_sha256": "aab8dd362d2b8bcdb9c08d79483303239d560ff388dcc78f6d1d5b550ac4ea83"
+    }
+  ],
+  "twin": {
+    "core": "cores/board_type_decode.ads (spec-only expression functions, gnatprove level 2, spec-only discharge)",
+    "core_sha256": "232e963f04d539eaa5a3db8069894750cbbd2ae03311ce084f5993de8eefd294",
+    "admitted": false
+  },
+  "inputs": 38,
+  "result": {
+    "agree_with_tt_smi": 30,
+    "agree_with_tt_topology": 25,
+    "upstream_copies_disagree": 10,
+    "differences_from_tt_smi": "8, all malformed input: core prints INVALID where tt-smi raises ValueError (empty, non-hex, 0x prefix, minus sign, leading space) or where both originals silently accept a 17-digit ID, a 21-digit ID and underscores"
+  },
+  "table": "receipts/board-type-decode-yang-table.txt",
+  "previous_version": "the first published core decoded every valid board ID as N/A: Extract_Upi masked the low 20 bits and its contract was a bound only, so the proof could not catch it. Found by this Yang; see README, What we got wrong.",
+  "not_claimed": [
+    "that tt-smi or tt-topology is wrong to be lenient: real board IDs are 16 hex digits",
+    "anything about hardware — no card was used"
+  ]
+}

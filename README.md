@@ -96,26 +96,15 @@ runs closer to real silicon than anything above.
 | `l2cpu_shuffle` | L2CPU harvesting-mask bit permutation, proved a genuine bijection (round-trip identity, not just a formula match) | tt-umd |
 | `dram_bank_mirror` | DRAM bank-mirroring index arithmetic; proves the underflow the C's if/else guard is *supposed* to prevent actually cannot happen | tt-umd |
 | `pcie_alignment` | page-alignment and hugepage-size checks | tt-umd |
-| `board_type_decode` ⚠ | board-ID → board-type decode — **under re-forge, see correction below** | tt-smi **and** tt-topology |
+| `board_type_decode` | board-ID → board-type decode (re-forged 2026-09-15, Yang-checked) | tt-smi **and** tt-topology |
 | `eth_xy_decode` | logical Ethernet port → physical NOC coordinate, proved injective (no two ports alias the same tile) | tt-topology |
 
 `board_type_decode` is worth a second look: **tt-smi and tt-topology each carry
 their own independent copy of this same decode, and the two copies have already
 drifted apart** — tt-topology's is missing three board types (the Grayskull cards)
-and one alias that tt-smi's has. The intent is one proven decode that is the union of both and cannot raise.
-**As published it does not yet do that** — see the correction below.
-
-> ⚠ **Correction, 2026-09-15.** We ran a Yang: Tenstorrent's two original
-> `get_board_type` functions (tt-smi `005fc6f`, tt-topology `7bd675f`, extracted
-> verbatim) and this core, fed the same 38 board IDs. It confirmed the drift at
-> runtime — the two copies disagree on 10 of 38, and tt-smi's raises `ValueError`
-> on malformed input where tt-topology's returns `N/A`. It also showed that **this
-> core, as published, decodes every real board ID as `N/A`.** Its `Extract_Upi`
-> reads the low 20 bits of the serial instead of the UPI field, and the contract we
-> wrote for it only bounded the result (`<= 16#FFFFF#`) instead of stating the
-> shift — so the proof could not catch it. The fault is in our specification, not
-> in the prover. The core is being re-forged with the extraction stated exactly and
-> will be re-tested the same way before this note is replaced. It was never admitted.
+and one alias that tt-smi's has. This core is the union of both, proved total: it cannot raise, unlike tt-smi's copy.
+A Yang run backs that up (see the differential tests below). It was not true of the
+first version we published, which is recorded under "What we got wrong".
 
 **Not everything attempted here proved.** One tt-umd core (ARC message-queue
 ring-buffer disjointness — proving a producer's writes and a consumer's reads can
@@ -175,6 +164,7 @@ diffs them.
 | transfer progress — against a **transcription** ⚠ | 600 | 0 mismatches |
 | timestep — against a **transcription** ⚠ | 600 | 210 divergences, all explained |
 | `fma_model_bh` — against **their unmodified C** | 20,064,000 | 0 mismatches; NaN, infinity, zero and finite results all reached |
+| `board_type_decode` — against **their code**, tt-smi and tt-topology at once | 38 | agrees with tt-smi on every well-formed ID; differs only on malformed input |
 
 The last two are **weaker evidence** and are labelled as such everywhere: those
 expressions are not callable, so they were copied. If the copy is wrong, those two
@@ -190,6 +180,17 @@ half of them forced onto exponent edges. Its mutant run flips one bit of the Ada
 result and must see all 65,000 cases disagree. A separate, informational run of
 2,000,064,000 triples also found 0 mismatches. `fma.c` itself is not redistributed;
 see NOTICE.
+
+The `board_type_decode` row compares against both upstream copies at once. Each
+original `get_board_type` was extracted verbatim from tt-smi `005fc6f` and
+tt-topology `7bd675f` and run on the same 38 board IDs as this core; the full
+three-way table is `receipts/board-type-decode-yang-table.txt`. The core agrees with
+tt-smi on every well-formed ID (so it carries the Grayskull cards and the `0x202`
+alias that tt-topology's copy lacks). The eight differences are all malformed input:
+the core refuses it, where tt-smi raises `ValueError`, and where both originals
+quietly accept a 17-digit ID and underscores (`1000_0431_0010_0123` decodes to
+`p100a`) because Python's `int()` is lenient. The same run showed the two upstream
+copies disagreeing on 10 of the 38 inputs.
 
 ---
 
@@ -216,6 +217,14 @@ Kept because a report that shows only its hits is not evidence of care.
   break (shifts reach 254). GNATprove would have proved the wrong formula faithfully.
   Both were found by reading the brief against the C before anything ran, which is
   the argument for the FMA differential test existing at all.
+- **The first `board_type_decode` we published decoded every real board ID as `N/A`.**
+  Its specification said in prose that the UPI is `(serial >> 36) & 0xFFFFF`, but the
+  contract gave `Extract_Upi` only a bound (`<= 16#FFFFF#`). The separately written
+  body masked the low 20 bits instead, which satisfies the bound, so the proof passed
+  honestly and proved the wrong thing. A Yang run against Tenstorrent's own two copies
+  caught it: 0 of 20 valid IDs decoded. The fault was in our specification, not the
+  prover. The core was re-forged with every function written as its formula (nothing
+  left for a separate body to get wrong), and the Yang re-run is in the table above.
 
 tt-npe fails loudly and kept surviving attempts to break it. That is worth saying.
 

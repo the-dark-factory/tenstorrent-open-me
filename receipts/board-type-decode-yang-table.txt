@@ -1,0 +1,39 @@
+row  input                    tt-smi                 tt-topology    ada twin (fixed) ada differs from
+1    "1000003100100123"       e150                   N/A            e150             topo
+2    "100000A100100123"       e300                   N/A            e300             topo
+3    "1000007100100123"       e75                    N/A            e75              topo
+4    "1000008100100123"       nb_cb                  nb_cb          nb_cb            
+5    "100000B100100123"       wh_4u                  wh_4u          wh_4u            
+6    "1000014100100123"       n300                   n300           n300             
+7    "1000018100100123"       n150                   n150           n150             
+8    "1000035100100123"       tt-galaxy-wh           tt-galaxy-wh   tt-galaxy-wh     
+9    "1000036100100123"       bh-scrappy             bh-scrappy     bh-scrappy       
+10   "1000043100100123"       p100a                  p100a          p100a            
+11   "1000040100100123"       p150a                  p150a          p150a            
+12   "1000041100100123"       p150b                  p150b          p150b            
+13   "1000042100100123"       p150c                  p150c          p150c            
+14   "1000044100100123"       p300b                  p300b          p300b            
+15   "1000045100100123"       p300a                  p300a          p300a            
+16   "1000046100100123"       p300c                  p300c          p300c            
+17   "1000047100100123"       tt-galaxy-bh           tt-galaxy-bh   tt-galaxy-bh     
+18   "1000202100100123"       tt-galaxy-bh           N/A            tt-galaxy-bh     topo
+19   "1000000100100123"       N/A                    N/A            N/A              
+20   "1000001100100123"       N/A                    N/A            N/A              
+21   "1000048100100123"       N/A                    N/A            N/A              
+22   "1000201100100123"       N/A                    N/A            N/A              
+23   "10FFFFF100100123"       N/A                    N/A            N/A              
+24   "1012345100100123"       N/A                    N/A            N/A              
+25   "100000a100100123"       e300                   N/A            e300             topo
+26   "FF00043FFFFFFFFF"       p100a                  p100a          p100a            
+27   "0000043000000000"       p100a                  p100a          p100a            
+28   "43000000000"            p100a                  p100a          p100a            
+29   "4300000000"             N/A                    N/A            N/A              
+30   "11000043100100123"      p100a                  p100a          INVALID          smi topo
+31   "AB1000043100100123000"  N/A                    N/A            INVALID          smi topo
+32   "N/A"                    N/A                    N/A            N/A              
+33   ""                       EXCEPTION:ValueError   N/A            INVALID          smi topo
+34   "ZZ"                     EXCEPTION:ValueError   N/A            INVALID          smi topo
+35   "0x1000043100100123"     EXCEPTION:ValueError   N/A            INVALID          smi topo
+36   "1000_0431_0010_0123"    p100a                  p100a          INVALID          smi topo
+37   "-1000043100100123"      EXCEPTION:ValueError   N/A            INVALID          smi topo
+38   " 1000043100100123"      EXCEPTION:ValueError   N/A            INVALID          smi topo
