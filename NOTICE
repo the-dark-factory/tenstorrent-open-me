@@ -7,8 +7,8 @@ Commit converted : 6967ce36b99c179742114107ca7da8aca722dad2 (committed 2026-09-0
 Upstream licence : Apache-2.0
 Upstream copyright : (c) 2025 Tenstorrent AI ULC
 
-The Ada/SPARK package specifications in cores/ are DERIVED WORKS of the upstream
-project named above, and are distributed under that project's licence, a copy of
+The Ada/SPARK package specifications for the Cores listed in THIS block are DERIVED
+WORKS of the upstream project named above, and are distributed under that project's licence, a copy of
 which is in LICENSE alongside this file.
 
 The upstream source is NOT modified by this work and is not redistributed here,
@@ -58,10 +58,49 @@ upstream library through its own headers.
 ⚠ NONE OF THIS HAS BEEN TESTED ON TENSTORRENT SILICON.
    Every result here concerns tt-npe as software. Nothing here says whether
    tt-npe models the hardware correctly.
+   The driver and tooling cores concern tt-umd, tt-smi and tt-topology as
+   software; the FMA cores concern Tenstorrent's C reference model.
+
+FURTHER UPSTREAM — tt-umd, tt-smi, tt-topology (drivers and tooling)
+====================================================================
+
+Each commit below is the tree that was read: every repository was a single fresh
+clone, made on 2026-09-15 before these cores were converted, and never pulled since.
+The upstream source is not modified and not redistributed; the cores are
+re-expressions in SPARK Ada with formal contracts, distributed under Apache-2.0.
+
+tt-umd (Tenstorrent user-mode driver)
+  Repository : https://github.com/tenstorrent/tt-umd
+  Commit     : f9173df20bec9bb93e5c92407e701e604ddef33d
+  Licence    : Apache-2.0
+  Copyright  : (c) 2023-2026 Tenstorrent Inc. (the SPDX line in each file below)
+  Cores      : tlb_window        <- device/pcie/tlb_window.cpp, types/tlb.hpp
+               sysmem_bounds     <- device/chip_helpers/sysmem_buffer.cpp
+               l2cpu_shuffle     <- device/coordinates/coordinate_manager.cpp
+               dram_bank_mirror  <- device/coordinates/blackhole_coordinate_manager.cpp
+               pcie_alignment    <- device/pcie/pci_device.cpp
+
+tt-smi
+  Repository : https://github.com/tenstorrent/tt-smi
+  Commit     : 005fc6f9804a802cb9bdd4dd9844d1d2fed84517
+  Licence    : Apache-2.0
+  Copyright  : Tenstorrent Inc. (the SPDX line in the file below)
+  Cores      : board_type_decode <- tt_smi/utils.py (get_board_type)
+
+tt-topology
+  Repository : https://github.com/tenstorrent/tt-topology
+  Commit     : 7bd675f888f9f0d27674fab7cb4188d5b1255481
+  Licence    : Apache-2.0
+  Copyright  : Tenstorrent Inc. (the SPDX line in the file below)
+  Cores      : board_type_decode <- tt_topology/backend.py (get_board_type)
+               eth_xy_decode     <- tt_topology/backend.py
+
+board_type_decode is the union of the two upstream copies of the same decode,
+which have drifted apart; it re-expresses both and copies neither.
 
 
-SECOND UPSTREAM — the Blackhole FMA reference model
-===================================================
+FURTHER UPSTREAM — the Blackhole FMA reference model
+====================================================
 
 Upstream project : tt-isa-documentation (Tenstorrent ISA documentation)
 Repository       : https://github.com/tenstorrent/tt-isa-documentation
